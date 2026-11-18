@@ -614,6 +614,39 @@ final class RefreshTriggerTests: BaseTestCase {
         wait(for: [switchedExp], timeout: 1.0)
     }
 
+    func test_eventsRefreshWhenFilterEventRegexesChange() {
+        let start = Date()
+        let kept = makeFakeEvent(id: "keep", start: start, end: start.addingTimeInterval(60))
+        let hidden = makeFakeEvent(id: "hide", start: start.addingTimeInterval(120), end: start.addingTimeInterval(240))
+        let store = FakeEventStore(events: [kept, hidden])
+
+        Defaults[.showEventsForPeriod] = .today
+        Defaults[.filterEventRegexes] = []
+        let manager = CalendarSync(provider: store, refreshInterval: 0)
+
+        let initialExp = expectation(description: "initial events")
+        manager.$events
+            .drop(while: \.isEmpty)
+            .first()
+            .sink { _ in initialExp.fulfill() }
+            .store(in: &cancellables)
+        wait(for: [initialExp], timeout: 1.0)
+
+        let filteredExp = expectation(description: "events after filter change")
+        manager.$events
+            .dropFirst()
+            .first()
+            .sink { events in
+                XCTAssertEqual(events, [kept])
+                filteredExp.fulfill()
+            }
+            .store(in: &cancellables)
+
+        Defaults[.filterEventRegexes] = ["hide"]
+
+        wait(for: [filteredExp], timeout: 1.0)
+    }
+
     func test_refreshSourcesPublishesEvents() async throws {
         let ev = makeFakeEvent(
             id: "R",

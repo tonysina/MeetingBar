@@ -48,5 +48,7 @@ enum MeetingOpenPreferencesMigration {
         if !migrated.isEmpty {
             Defaults[.providerBrowsers] = migrated
         }
+        // Clear legacy keys so a later reset of providerBrowsers is not re-migrated on relaunch.
+        Defaults.reset(.meetBrowser, .zoomBrowser, .teamsBrowser, .jitsiBrowser, .slackBrowser, .riversideBrowser)
     }
 }

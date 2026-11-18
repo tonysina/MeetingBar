@@ -107,6 +107,19 @@ final class ProviderBrowserMigrationTests: BaseTestCase {
         XCTAssertTrue(Defaults[.providerBrowsers].isEmpty)
     }
 
+    func testMigrateDefaultsIfNeeded_doesNotRestoreLegacyBrowserAfterReset() {
+        Defaults[.zoomBrowser] = zoomApp
+        Defaults[.providerBrowsers] = [:]
+        MeetingOpenPreferencesMigration.migrateDefaultsIfNeeded()
+        XCTAssertEqual(Defaults[.providerBrowsers]["Zoom"], zoomApp)
+
+        // User resets Zoom to the default browser; relaunch must not bring the old one back.
+        Defaults[.providerBrowsers] = [:]
+        MeetingOpenPreferencesMigration.migrateDefaultsIfNeeded()
+
+        XCTAssertTrue(Defaults[.providerBrowsers].isEmpty)
+    }
+
     func testMigrateDefaultsIfNeeded_migratesAllSixProviders() {
         let meet = Browser(name: "MeetInOne", path: "")
         let slack = Browser(name: "Slack", path: "")

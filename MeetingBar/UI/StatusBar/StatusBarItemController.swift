@@ -142,7 +142,7 @@ final class StatusBarItemController {
     func statusMenuBarAction(sender _: NSStatusItem) {
         let event = NSApp.currentEvent
 
-        if event?.type == .rightMouseUp {
+        if event?.type == .rightMouseDown {
             // Right button click
             joinNextMeeting()
         } else if event == nil || event?.type == .leftMouseDown || event?.type == .leftMouseUp {

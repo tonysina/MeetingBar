@@ -43,13 +43,21 @@ enum Keychain {
         delete(for: service)                                     // overwrite if exists
 
         let query = KeychainQueryFactory.saveQuery(data: data, service: service)
-        return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            MeetingBarLogger.calendar.error("Keychain save failed, OSStatus \(status)")
+        }
+        return status == errSecSuccess
     }
 
     static func load(for service: String) -> Data? {
         let query = KeychainQueryFactory.loadQuery(service: service)
         var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess else {
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess else {
+            if status != errSecItemNotFound {
+                MeetingBarLogger.calendar.error("Keychain load failed, OSStatus \(status)")
+            }
             return nil
         }
         return item as? Data
@@ -58,6 +66,10 @@ enum Keychain {
     @discardableResult
     static func delete(for service: String) -> Bool {
         let query = KeychainQueryFactory.deleteQuery(service: service)
-        return SecItemDelete(query as CFDictionary) == errSecSuccess
+        let status = SecItemDelete(query as CFDictionary)
+        if status != errSecSuccess, status != errSecItemNotFound {
+            MeetingBarLogger.calendar.error("Keychain delete failed, OSStatus \(status)")
+        }
+        return status == errSecSuccess
     }
 }

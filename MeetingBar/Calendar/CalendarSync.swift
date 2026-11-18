@@ -219,7 +219,7 @@ public class CalendarSync: ObservableObject {
         if !AppSettings.current.events.dismissedEvents.isEmpty {
             AppSettings.refreshDismissedEvents(using: deduplicatedEvents)
         }
-        return deduplicatedEvents.filtered().sorted { $0.startDate < $1.startDate }
+        return deduplicatedEvents.filtered().sortedByStart()
     }
 
     private func setupPublishers() {

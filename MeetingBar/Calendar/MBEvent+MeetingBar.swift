@@ -48,6 +48,12 @@ public extension Array where Element == MBEvent {
         }).values)
     }
 
+    /// Start-time order with `id` as tie-break so simultaneous meetings keep a
+    /// stable order across refreshes (dedup via Dictionary yields random order).
+    func sortedByStart() -> [MBEvent] {
+        sorted { ($0.startDate, $0.id) < ($1.startDate, $1.id) }
+    }
+
     /// Returns only those events that pass all the user's Defaults filters.
     func filtered() -> [MBEvent] {
         let candidates = enumerated().map { index, event in

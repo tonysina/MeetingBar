@@ -871,6 +871,19 @@ final class ZoomPersonalRoomTests: BaseTestCase {
             .zoomApp(URL(string: "zoommtg://zoom.us/join?confno=5551112222&pwd=abc")!)
         )
     }
+
+    func test_zoomNonJoinPathsAreNotConvertedToZoomApp() {
+        for urlString in [
+            "https://us02web.zoom.us/w/123?tk=T&pwd=P",
+            "https://zoom.us/s/123?pwd=P"
+        ] {
+            XCTAssertEqual(
+                zoomWebOpenDestination(for: URL(string: urlString)!, browser: zoomAppBrowser),
+                .defaultBrowser,
+                urlString
+            )
+        }
+    }
 }
 
 final class CalendarOpenURLTests: BaseTestCase {

@@ -608,6 +608,8 @@ enum ZoomWebOpenDestination: Equatable {
 func zoomWebOpenDestination(for url: URL, browser: Browser) -> ZoomWebOpenDestination {
     guard browser == zoomAppBrowser else { return .selectedBrowser }
     guard !isZoomPersonalRoomURL(url) else { return .systemBrowser }
+    // Only /j/<id> maps to zoommtg://join; webinar (/w/) and other paths need the browser.
+    guard url.pathComponents.count > 1, url.pathComponents[1] == "j" else { return .defaultBrowser }
 
     let urlString = url.absoluteString
         .replacingOccurrences(of: "?", with: "&")

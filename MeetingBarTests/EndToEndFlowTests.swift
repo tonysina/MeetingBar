@@ -414,7 +414,7 @@ final class StatusBarEndToEndFlowTests: EndToEndFlowTestCase {
             harness.controller.statusItem.button?.attributedTitle.string.hasPrefix("Event E1") == true
         }
 
-        let dismissItem = try XCTUnwrap(flatten(harness.controller.statusItemMenu.items).first {
+        let dismissItem = try XCTUnwrap(flatten(rebuildMenu(harness)).first {
             $0.action == #selector(StatusBarItemController.dismissNextMeetingAction)
         })
         performClick(dismissItem)
@@ -424,7 +424,7 @@ final class StatusBarEndToEndFlowTests: EndToEndFlowTestCase {
             harness.controller.statusItem.button?.attributedTitle.string.hasPrefix("Event E2") == true
         }
 
-        let summary = flatten(harness.controller.statusItemMenu.items).first {
+        let summary = flatten(rebuildMenu(harness)).first {
             $0.identifier == MenuBuilder.meetingSummaryItemIdentifier
         }
         XCTAssertEqual((summary?.representedObject as? MBEvent)?.id, "E2")
@@ -445,7 +445,7 @@ final class StatusBarEndToEndFlowTests: EndToEndFlowTestCase {
         try await waitUntil("notification dismissal updates title") {
             harness.controller.statusItem.button?.attributedTitle.string.hasPrefix("Event E2") == true
         }
-        let summary = flatten(harness.controller.statusItemMenu.items).first {
+        let summary = flatten(rebuildMenu(harness)).first {
             $0.identifier == MenuBuilder.meetingSummaryItemIdentifier
         }
         XCTAssertEqual((summary?.representedObject as? MBEvent)?.id, "E2")
@@ -456,7 +456,7 @@ final class StatusBarEndToEndFlowTests: EndToEndFlowTestCase {
         try await waitUntil("restoring dismissals updates title") {
             harness.controller.statusItem.button?.attributedTitle.string.hasPrefix("Event E1") == true
         }
-        let restoredSummary = flatten(harness.controller.statusItemMenu.items).first {
+        let restoredSummary = flatten(rebuildMenu(harness)).first {
             $0.identifier == MenuBuilder.meetingSummaryItemIdentifier
         }
         XCTAssertEqual((restoredSummary?.representedObject as? MBEvent)?.id, "E1")
@@ -489,7 +489,7 @@ final class StatusBarEndToEndFlowTests: EndToEndFlowTestCase {
         try await waitUntil("dismissal updates title without UI action") {
             harness.controller.statusItem.button?.attributedTitle.string.hasPrefix("Event E2") == true
         }
-        let summary = flatten(harness.controller.statusItemMenu.items).first {
+        let summary = flatten(rebuildMenu(harness)).first {
             $0.identifier == MenuBuilder.meetingSummaryItemIdentifier
         }
         XCTAssertEqual((summary?.representedObject as? MBEvent)?.id, "E2")

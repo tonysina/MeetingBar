@@ -303,9 +303,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self else { return }
                 NSApplication.shared.terminate(self)
             },
-            onChangelogClosed: { [weak self] in
+            onChangelogClosed: {
                 AppSettings.acknowledgeCurrentChangelog()
-                self?.statusBarItem.updateMenu()
             }
         )
     }

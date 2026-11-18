@@ -115,7 +115,6 @@ final class StatusBarItemController {
         .receive(on: DispatchQueue.main)
         .sink { [weak self] _ in
             self?.updateTitle()
-            self?.updateMenu()
         }
         .store(in: &cancellables)
     }
@@ -152,11 +151,11 @@ final class StatusBarItemController {
     }
 
     func openMenu() {
+        // The menu is built lazily on open rather than on every state change.
+        updateMenu()
         statusItem.menu = statusItemMenu
         statusItem.button?.performClick(nil)  // ...and click
         statusItem.menu = nil
-        // Updates were intentionally deferred while the menu was tracking.
-        updateMenu()
     }
 
     func configure(dependencies: StatusBarDependencies) {
@@ -166,7 +165,6 @@ final class StatusBarItemController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.updateTitle()
-                self?.updateMenu()
             }
     }
 

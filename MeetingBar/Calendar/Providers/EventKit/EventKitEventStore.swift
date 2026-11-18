@@ -62,14 +62,19 @@ enum EventKitReadAccessError: LocalizedError, Equatable {
 extension EKEventStore: AuthenticatedEventStore {
     nonisolated(unsafe) static var shared = EKEventStore()
 
+    /// Rebuilds `shared` so shared/delegated (e.g. Exchange) calendars are visible.
+    /// Needs full access; call on launch as well as after sign-in.
+    static func rebuildSharedWithDelegateSources() {
+        var sources = shared.sources
+        sources.append(contentsOf: shared.delegateSources)
+        shared = EKEventStore(sources: sources)
+    }
+
     public func signIn(forcePrompt: Bool = false) async throws {
         try await withCheckedThrowingContinuation { cont in
             let handler: @Sendable (Bool, (any Error)?) -> Void = { granted, error in
                 if granted {
-                    var sources = EKEventStore.shared.sources
-                    sources.append(contentsOf: EKEventStore.shared.delegateSources)
-
-                    EKEventStore.shared = EKEventStore(sources: sources)
+                    EKEventStore.rebuildSharedWithDelegateSources()
                     cont.resume()
                 } else if let accessError = EventKitReadAccessError.current() {
                     cont.resume(throwing: accessError)

@@ -71,6 +71,10 @@ public final class CalendarRepository {
         self.activeProviderName = providerName
         self.storeFactory = storeFactory
         self.observesSystemStoreChanges = true
+        // signIn only runs on provider switch, so relaunch needs this to see delegated calendars.
+        if providerName == .macOSEventKit, EventKitReadAccessError.current() == nil {
+            EKEventStore.rebuildSharedWithDelegateSources()
+        }
         self.activeProvider = storeFactory(providerName)
         observeStoreChanges(for: providerName)
     }

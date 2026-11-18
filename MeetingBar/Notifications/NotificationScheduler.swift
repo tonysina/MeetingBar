@@ -366,16 +366,3 @@ extension NotificationPlanningSettings {
         )
     }
 }
-
-extension EventActionEvent {
-    fileprivate init(event: MBEvent) {
-        self.init(
-            id: event.id,
-            lastModifiedDate: event.lastModifiedDate,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            isAllDay: event.isAllDay,
-            hasMeetingLink: event.meetingLink != nil
-        )
-    }
-}

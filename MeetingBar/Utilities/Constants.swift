@@ -194,7 +194,6 @@ enum WindowTitles {
 
 enum notificationIDs {
     static let event_starts = "NEXT_EVENT"
-    static let event_ends = "EVENT_ENDS"
 }
 
 let eventStartScriptPlaceholder = """

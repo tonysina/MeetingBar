@@ -12,16 +12,12 @@ import Foundation
 import UserNotifications
 
 public enum CalendarSyncError: LocalizedError {
-    case eventStoreNotAvailable
-    case calendarAccessFailed(Error)
     case eventFetchFailed(Error)
     case refreshTimedOut(TimeInterval)
 
     public var errorDescription: String? {
         switch self {
-        case .eventStoreNotAvailable:
-            return "Event store is not available"
-        case let .calendarAccessFailed(error), let .eventFetchFailed(error):
+        case let .eventFetchFailed(error):
             return error.localizedDescription
         case let .refreshTimedOut(seconds):
             return "Calendar refresh did not finish within \(Int(seconds)) seconds"
@@ -71,7 +67,7 @@ public class CalendarSync: ObservableObject {
         self.refreshInterval = refreshInterval
         AppSettings.migrateSelectedCalendarsByProviderIfNeeded()
         repository = CalendarRepository(providerName: Defaults[.eventStoreProvider])
-        await configureProvider(Defaults[.eventStoreProvider])
+        subscribeToRepositoryStoreChanges()
         setupPublishers()
         refreshSubject.send() // initial load
     }
@@ -132,10 +128,6 @@ public class CalendarSync: ObservableObject {
             return .authRequired(error.localizedDescription)
         }
         return .failed(error.localizedDescription)
-    }
-
-    private func configureProvider(_ providerName: EventStoreProvider) async {
-        subscribeToRepositoryStoreChanges()
     }
 
     private func subscribeToRepositoryStoreChanges() {

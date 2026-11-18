@@ -96,18 +96,14 @@ enum AppAction {
     case minuteElapsed
 
     // Calendar
-    case calendarStoreChanged
     case refreshCalendars
     case calendarsLoaded([MBCalendar], provider: EventStoreProvider)
     case eventsLoaded([MBEvent])
     case selectedCalendarsChanged([String])
     case providerHealthChanged(ProviderHealth)
-    case calendarRefreshFailed(Error)
-    case providerChanged(EventStoreProvider)
     case selectCalendar(id: String, selected: Bool)
 
     // Settings
-    case settingsChanged
     case toggleMeetingTitleVisibility
     case notificationSettingsChanged(NotificationSettingsChange)
 
@@ -126,7 +122,6 @@ enum AppAction {
     case snoozeMeeting(eventID: String, action: NotificationEventTimeAction)
 
     // Onboarding / external routes
-    case onboardingCompleted(EventStoreProvider)
     case openRoute(AppRoute)
 
     // Notification reconcile
@@ -304,7 +299,6 @@ final class AppModel: ObservableObject {
     private var refreshTask: Task<Void, Never>?
     private var providerChangeTask: Task<Void, Never>?
     private var providerChangeGeneration = 0
-    private var onboardingTask: Task<Void, Never>?
     private var notificationReconcileTask: Task<Void, Never>?
     private var snoozeTasks: [String: Task<Void, Never>] = [:]
     private var cancellables = Set<AnyCancellable>()
@@ -367,17 +361,16 @@ final class AppModel: ObservableObject {
              .didWake, .systemClockChanged, .timezoneChanged, .dayChanged,
              .networkBecameReachable, .minuteElapsed:
             handleLifecycleAction(action)
-        case .calendarStoreChanged, .refreshCalendars, .calendarsLoaded,
+        case .refreshCalendars, .calendarsLoaded,
              .eventsLoaded, .selectedCalendarsChanged, .providerHealthChanged,
-             .calendarRefreshFailed, .providerChanged,
-             .selectCalendar, .changeProvider, .settingsChanged,
+             .selectCalendar, .changeProvider,
              .toggleMeetingTitleVisibility:
             handleCalendarAction(action)
         case .notificationResponse, .joinMeeting, .joinNearestMeeting, .dismissMeeting,
              .dismissNearestMeeting, .undismissMeeting, .clearDismissedMeetings,
              .snoozeMeeting:
             handleMeetingAction(action)
-        case .onboardingCompleted, .openRoute:
+        case .openRoute:
             handleExternalAction(action)
         case .reconcileNotifications:
             reconcileNotificationsFromState()
@@ -413,8 +406,6 @@ final class AppModel: ObservableObject {
     func handleDayChange() { send(.dayChanged) }
     func handleNetworkBecameReachable() { send(.networkBecameReachable) }
     func handleMinuteTick() { send(.minuteElapsed) }
-    func handleCalendarStoreChange() { send(.calendarStoreChanged) }
-    func requestRefresh() { send(.refreshCalendars) }
     func reconcileNotifications() { send(.reconcileNotifications) }
 
     /// Add or remove a calendar from the user's selection. Routes through
@@ -490,7 +481,7 @@ final class AppModel: ObservableObject {
 
     private func handleCalendarAction(_ action: AppAction) {
         switch action {
-        case .calendarStoreChanged, .refreshCalendars, .settingsChanged:
+        case .refreshCalendars:
             scheduleRefresh()
         case .toggleMeetingTitleVisibility:
             environment.toggleMeetingTitleVisibility()
@@ -504,11 +495,6 @@ final class AppModel: ObservableObject {
             state.selectedCalendarIDs = selectedCalendarIDs
         case .providerHealthChanged(let health):
             state.providerHealth = health
-        case .calendarRefreshFailed:
-            break
-        case .providerChanged(let provider):
-            resetProviderState(to: provider)
-            scheduleRefresh()
         case .selectCalendar(let id, let selected):
             environment.toggleCalendarSelection(id, selected)
         case .changeProvider(let provider, let signOut):
@@ -567,12 +553,6 @@ final class AppModel: ObservableObject {
 
     private func handleExternalAction(_ action: AppAction) {
         switch action {
-        case .onboardingCompleted(let provider):
-            onboardingTask?.cancel()
-            onboardingTask = Task { [weak self] in
-                guard let self else { return }
-                _ = await completeOnboarding(with: provider)
-            }
         case .openRoute(let route):
             handleRoute(route)
         default:
@@ -612,12 +592,6 @@ final class AppModel: ObservableObject {
               !state.selectedCalendarIDs.isEmpty,
               nextEvent() == nil else { return }
         environment.clearDeliveredNotifications()
-    }
-
-    private func resetProviderState(to provider: EventStoreProvider) {
-        state.activeProvider = provider
-        state.calendars = []
-        state.events = []
     }
 
     private func beginProviderChange() -> Int {
@@ -671,8 +645,6 @@ final class AppModel: ObservableObject {
         providerChangeTask = nil
         providerChangeGeneration += 1
         state.providerChangeInProgress = false
-        onboardingTask?.cancel()
-        onboardingTask = nil
         notificationReconcileTask?.cancel()
         notificationReconcileTask = nil
         snoozeTasks.values.forEach { $0.cancel() }

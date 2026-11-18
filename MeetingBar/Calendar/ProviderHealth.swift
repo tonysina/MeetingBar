@@ -70,8 +70,7 @@ extension ProviderHealth {
     private static func isCalendarPermissionRequired(_ error: Error) -> Bool {
         if error is EventKitReadAccessError { return true }
         switch error {
-        case let CalendarSyncError.calendarAccessFailed(underlying),
-             let CalendarSyncError.eventFetchFailed(underlying):
+        case let CalendarSyncError.eventFetchFailed(underlying):
             return isCalendarPermissionRequired(underlying)
         default:
             return false
@@ -100,8 +99,6 @@ extension ProviderHealth {
         }
 
         switch error {
-        case let CalendarSyncError.calendarAccessFailed(underlying):
-            return isAuthRequired(underlying)
         case let CalendarSyncError.eventFetchFailed(underlying):
             return isAuthRequired(underlying)
         default:

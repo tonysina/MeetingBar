@@ -369,19 +369,6 @@ final class AppModelTests: BaseTestCase {
         XCTAssertEqual(harness.toggleMeetingTitleVisibilityCallCount, 1)
     }
 
-    func testOnboardingCompletionDelegatesProviderSelection() async {
-        let harness = AppModelTestHarness()
-        harness.model.send(.calendarsLoaded([], provider: .googleCalendar))
-        harness.publishSelectedCalendarIDs(["google-calendar"])
-        await harness.flushAsyncActions()
-
-        harness.model.send(.onboardingCompleted(.googleCalendar))
-        await harness.flushAsyncActions()
-
-        XCTAssertEqual(harness.model.state.activeProvider, .googleCalendar)
-        XCTAssertEqual(harness.completedOnboardingProviders, [.googleCalendar])
-    }
-
     func testOpenRouteDelegatesToAppBoundaries() {
         let harness = AppModelTestHarness()
         let oauthURL = URL(string: "com.googleusercontent.apps.123:/oauthredirect?code=abc")!
@@ -408,23 +395,21 @@ final class AppModelTests: BaseTestCase {
         harness.model.send(.changeProvider(.googleCalendar, signOut: true))
         harness.model.send(.eventsLoaded([event]))
         harness.model.send(.snoozeMeeting(eventID: event.id, action: .tenMinuteLater))
-        harness.model.send(.onboardingCompleted(.googleCalendar))
         let startDeadline = Date().addingTimeInterval(1)
-        while harness.startedAsyncOperationCount < 4, Date() < startDeadline {
+        while harness.startedAsyncOperationCount < 3, Date() < startDeadline {
             try? await Task.sleep(nanoseconds: 10_000_000)
         }
-        XCTAssertEqual(harness.startedAsyncOperationCount, 4)
+        XCTAssertEqual(harness.startedAsyncOperationCount, 3)
 
         harness.model.send(.willTerminate)
         let cancellationDeadline = Date().addingTimeInterval(1)
-        while harness.cancelledAsyncOperationCount < 4, Date() < cancellationDeadline {
+        while harness.cancelledAsyncOperationCount < 3, Date() < cancellationDeadline {
             try? await Task.sleep(nanoseconds: 10_000_000)
         }
 
-        XCTAssertEqual(harness.cancelledAsyncOperationCount, 4)
+        XCTAssertEqual(harness.cancelledAsyncOperationCount, 3)
         XCTAssertTrue(harness.providerChanges.isEmpty)
         XCTAssertTrue(harness.reconciledEventIDs.isEmpty)
         XCTAssertTrue(harness.snoozedEvents.isEmpty)
-        XCTAssertTrue(harness.completedOnboardingProviders.isEmpty)
     }
 }

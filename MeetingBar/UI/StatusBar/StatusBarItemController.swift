@@ -587,9 +587,3 @@ private func statusBarCalendar() -> Calendar {
     calendar.locale = I18N.instance.locale
     return calendar
 }
-
-enum NextEventState {
-    case none
-    case afterThreshold(MBEvent)
-    case nextEvent(MBEvent)
-}

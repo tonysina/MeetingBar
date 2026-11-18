@@ -160,14 +160,6 @@ public final class CalendarRepository {
         try await activeProvider.fetchAllCalendars()
     }
 
-    public func fetchEventsForDateRange(
-        for calendars: [MBCalendar],
-        from dateFrom: Date,
-        to dateTo: Date
-    ) async throws -> [MBEvent] {
-        try await activeProvider.fetchEventsForDateRange(for: calendars, from: dateFrom, to: dateTo)
-    }
-
     /// Fetches events for the currently configured display period and selected calendars.
     ///
     /// This is a convenience that consolidates date-range calculation and selected-calendar
@@ -196,14 +188,6 @@ public final class CalendarRepository {
     }
 
     // MARK: - Authenticated helpers
-
-    public func signIn(forcePrompt: Bool = false) async throws {
-        try await (activeProvider as? AuthenticatedEventStore)?.signIn(forcePrompt: forcePrompt)
-    }
-
-    public func signOut() async {
-        await (activeProvider as? AuthenticatedEventStore)?.signOut()
-    }
 
     /// Forwards an OAuth callback URL to the active provider if it supports it.
     ///

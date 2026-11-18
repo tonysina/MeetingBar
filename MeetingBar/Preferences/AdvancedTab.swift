@@ -165,8 +165,6 @@ struct EditScriptModal: View {
         let openPanel = NSOpenPanel()
         openPanel.canChooseFiles = false
         openPanel.canChooseDirectories = true
-        openPanel.allowedContentTypes = [.appleScript]
-        openPanel.allowsOtherFileTypes = false
         openPanel.prompt = "preferences_advanced_save_script_button".loco()
         openPanel.message = "preferences_advanced_wrong_location_message".loco()
         openPanel.directoryURL = scriptPath

@@ -228,6 +228,7 @@ public class CalendarSync: ObservableObject {
             .selectedCalendarIDs,
             .showEventsForPeriod,
             .customRegexes,
+            .filterEventRegexes,
             .declinedEventsAppereance,
             .showPendingEvents,
             .showTentativeEvents,

@@ -426,7 +426,10 @@ extension AppSettings {
             )
         }
 
-        replaceDismissedEvents(dismissedEvents)
+        // Skip the write when nothing changed: every assignment notifies Defaults observers.
+        if dismissedEvents != Defaults[.dismissedEvents] {
+            replaceDismissedEvents(dismissedEvents)
+        }
     }
 
     @MainActor

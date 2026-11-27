@@ -43,4 +43,14 @@ final class MBEventDeduplicationTests: BaseTestCase {
         XCTAssertEqual(reversedResult.count, 1)
         XCTAssertTrue(reversedResult[0].attendees.contains { $0.isCurrentUser })
     }
+
+    func testSortedByStartBreaksTiesByIDRegardlessOfInputOrder() {
+        let start = Date()
+        let end = start.addingTimeInterval(1800)
+        let first = makeFakeEvent(id: "a", start: start, end: end)
+        let second = makeFakeEvent(id: "b", start: start, end: end)
+
+        XCTAssertEqual([first, second].sortedByStart().map(\.id), ["a", "b"])
+        XCTAssertEqual([second, first].sortedByStart().map(\.id), ["a", "b"])
+    }
 }
